@@ -3,6 +3,7 @@ import { Settings, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import Url from "./url";
 import PDF from "./pdf";
+import YtVideo from "./yt-video";
 
 export default function UploadDocs() {
   return (
@@ -27,6 +28,7 @@ export default function UploadDocs() {
       </div>
       <Url />
       <PDF />
+      <YtVideo />
     </div>
   );
 }
