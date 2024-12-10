@@ -27,6 +27,7 @@ export default function PDF() {
 
   const handlePdfUpload = async () => {
     setIsUploading(true);
+    console.log(file);
     if (!file) {
       setIsUploading(false);
       toast({
@@ -34,6 +35,7 @@ export default function PDF() {
         title: "Error",
         description: "PDF file is required",
       });
+      return;
     }
     try {
       toast({
