@@ -23,7 +23,7 @@ export default function Url() {
       return;
     }
     try {
-      const res = await scrapeWebContent(formData);
+      const res = await scrapeWebContent(url);
       if (res.error) {
         setIsUploading(false);
         throw new Error(res.error.message);

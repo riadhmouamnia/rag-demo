@@ -5,9 +5,7 @@ import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
 import axios from "axios";
 
-export async function scrapeWebContent(formData: FormData) {
-  const url = formData.get("url");
-
+export async function scrapeWebContent(url: string) {
   if (typeof url !== "string" || url.length === 0)
     return { error: { message: "URL is required" } };
 
