@@ -2,6 +2,7 @@ import { Button } from "./ui/button";
 import { Settings, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import Url from "./url";
+import PDF from "./pdf";
 
 export default function UploadDocs() {
   return (
@@ -25,6 +26,7 @@ export default function UploadDocs() {
         </div>
       </div>
       <Url />
+      <PDF />
     </div>
   );
 }
