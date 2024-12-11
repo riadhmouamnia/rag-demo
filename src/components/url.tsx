@@ -5,6 +5,7 @@ import { useState } from "react";
 import FormStatusButton from "./form-status-button";
 import { Globe } from "lucide-react";
 import { Input } from "./ui/input";
+import { generateEmbeddings } from "@/actions/generate-embeddings";
 
 export default function Url() {
   const [isUploading, setIsUploading] = useState(false);
@@ -28,9 +29,17 @@ export default function Url() {
         setIsUploading(false);
         throw new Error(res.error.message);
       }
+      const emmbeddingsRes = await generateEmbeddings(res.data.content, {
+        url,
+        source: "website",
+      });
+      if (emmbeddingsRes?.error) {
+        setIsUploading(false);
+        throw new Error(emmbeddingsRes.error.message);
+      }
       toast({
-        title: url,
-        description: "Your document has been uploaded successfully",
+        title: "Success",
+        description: `embeddings generated successfully for ${url}`,
       });
       setIsUploading(false);
     } catch (error) {

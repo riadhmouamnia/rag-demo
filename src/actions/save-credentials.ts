@@ -11,8 +11,6 @@ export async function saveCredentials(formData: FormData) {
   if (!openAiKey || !dbConnectionString || !tableName) {
     return { error: { message: "Missing credentials" } };
   }
-  console.log({ openAiKey, dbConnectionString, tableName });
-
   try {
     await setCoockie("openAiKey", openAiKey.toString());
     await setCoockie("dbConnectionString", dbConnectionString.toString());

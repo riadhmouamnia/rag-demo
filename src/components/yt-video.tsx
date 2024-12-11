@@ -5,6 +5,7 @@ import FormStatusButton from "./form-status-button";
 import { Youtube } from "lucide-react";
 import { Input } from "./ui/input";
 import { transcriptYoutubeVideo } from "@/actions/transcript-yt-video";
+import { generateEmbeddings } from "@/actions/generate-embeddings";
 
 export default function YtVideo() {
   const [isUploading, setIsUploading] = useState(false);
@@ -28,9 +29,19 @@ export default function YtVideo() {
         setIsUploading(false);
         throw new Error(res.error.message);
       }
+      const videoId = url.split("v=")[1].split("&")[0];
+      const embeddingsRes = await generateEmbeddings(res.data.content.text, {
+        videoId,
+        source: "youtube",
+      });
+      if (embeddingsRes?.error) {
+        setIsUploading(false);
+        throw new Error(embeddingsRes.error.message);
+      }
       toast({
-        title: url,
-        description: "Your YouTube video has been transcripted successfully",
+        title: "Success",
+        description:
+          "embeddings generated successfully for video id:" + videoId,
       });
       setIsUploading(false);
       console.log(res.data.content.text);

@@ -6,6 +6,7 @@ import { useCallback, useState } from "react";
 import FormStatusButton from "./form-status-button";
 import { Input } from "./ui/input";
 import { FileUp } from "lucide-react";
+import { generateEmbeddings } from "@/actions/generate-embeddings";
 
 export default function PDF() {
   const [file, setFile] = useState<FileType>();
@@ -38,11 +39,22 @@ export default function PDF() {
       return;
     }
     try {
+      console.log(file.textContent);
+      const embeddingsRes = await generateEmbeddings(file.textContent, {
+        source: "pdf",
+        fileName: file.name,
+      });
+
+      if (embeddingsRes?.error) {
+        setIsUploading(false);
+        throw new Error(embeddingsRes.error.message);
+      }
       toast({
-        title: file?.name,
-        description: "Your document has been uploaded successfully",
+        title: "Success",
+        description: `embeddings generated successfully for ${file.name}`,
       });
       setIsUploading(false);
+      setFile(undefined);
     } catch (error) {
       toast({
         variant: "destructive",
@@ -50,6 +62,7 @@ export default function PDF() {
         description: "There was an error uploading your document" + error,
       });
       setIsUploading(false);
+      setFile(undefined);
     }
   };
 
@@ -68,7 +81,7 @@ export default function PDF() {
             <p>{file.name}</p>
           ) : (
             <>
-              <Input {...getInputProps()} />
+              <Input {...getInputProps()} name="pdf" />
               <p className="text-gray-500">
                 Drag & drop a PDF file here, or click to select a file
               </p>
