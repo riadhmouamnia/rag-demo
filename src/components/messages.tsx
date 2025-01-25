@@ -5,12 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bot, User } from "lucide-react";
+import aiResponse from "@/lib/ai-response";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 export default function Messages() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -21,23 +26,24 @@ export default function Messages() {
     setIsLoading(true);
 
     try {
-      // Implementation will come after setting up the backend
-      const response = {
-        role: "assistant" as const,
-        content:
-          "This is a placeholder response. The actual implementation will come after setting up the backend.",
-      };
-      setMessages((prev) => [...prev, response]);
+      const res = await aiResponse(input);
+      if (res.error) {
+        console.error("Error:", res.error.message);
+        return;
+      } else {
+        console.log(res.data);
+        const assistantMessage = {
+          role: "assistant" as const,
+          content: res.data!,
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      }
     } catch (error) {
       console.error("Error:", error);
     } finally {
       setIsLoading(false);
     }
   };
-
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   return (
     <Card className="backdrop-blur-m shadow-xl h-[600px] flex flex-col animate-fadeIn">
       <ScrollArea className="flex-1 p-6">

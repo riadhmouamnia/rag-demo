@@ -21,7 +21,10 @@ export async function generateEmbeddings(
     apiKey: openAiKey,
   });
   try {
-    const splitter = new RecursiveCharacterTextSplitter();
+    const splitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 500,
+      chunkOverlap: 50,
+    });
     const splittedDocs = await splitter.createDocuments([text], [{ info }]);
 
     const vectorStore = await NeonPostgres.initialize(embeddings, {
