@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bot, User } from "lucide-react";
 import aiResponse from "@/lib/ai-response";
+import { toast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,7 +20,6 @@ export default function Messages() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-
     const userMessage = { role: "user" as const, content: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
@@ -29,6 +29,12 @@ export default function Messages() {
       const res = await aiResponse(input);
       if (res.error) {
         console.error("Error:", res.error.message);
+        setMessages((prev) => prev.slice(0, -1));
+        toast({
+          title: "Error",
+          description: res.error.message,
+          variant: "destructive",
+        });
         return;
       } else {
         console.log(res.data);

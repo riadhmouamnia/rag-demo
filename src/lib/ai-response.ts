@@ -4,52 +4,27 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { ChatOpenAI } from "@langchain/openai";
 import { getCookie } from "./cookies";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-import { NeonPostgres } from "@langchain/community/vectorstores/neon";
-import { OpenAIEmbeddings } from "@langchain/openai";
 import {
   RunnableSequence,
   RunnablePassthrough,
 } from "@langchain/core/runnables";
-
-type Docs = {
-  Document: {
-    pageContent: string;
-    metadata: any;
-    id?: string;
-  }[];
-};
+import Retriever from "./retriver";
+import combineDocuments from "./combine-documents";
 
 export default async function aiResponse(
   question: string
 ): Promise<{ success: boolean; data?: string; error?: { message: string } }> {
   const openAiKey = await getCookie("openAiKey");
-  const dbConnectionString = await getCookie("dbConnectionString");
-  const tableName = await getCookie("tableName");
 
   try {
+    const retriever = await Retriever();
     if (!openAiKey) {
-      return { success: false, error: { message: "Missing openAiKey" } };
-    } else if (!dbConnectionString) {
-      return {
-        success: false,
-        error: { message: "Missing dbConnectionString" },
-      };
-    } else if (!tableName) {
-      return {
-        success: false,
-        error: { message: "Missing tableName" },
-      };
+      throw new Error("Missing openAiKey");
     } else {
-      const embeddings = new OpenAIEmbeddings({ apiKey: openAiKey });
       const llm = new ChatOpenAI({ apiKey: openAiKey });
-      const vectorStore = await NeonPostgres.initialize(embeddings, {
-        connectionString: dbConnectionString,
-        tableName: tableName.toLowerCase().replace(/\s/g, "_"),
-      });
 
       const standaloneQuestionTemplate =
         "Given a question, convert it to a standalone question. question: {question} standalone question:";
-
       const answerTemplate = `You are a helpful and enthusiastic support bot who can answer a given question based on the context provided. Try to find the answer in the context. If you really don't know the answer, say "I'm sorry, I don't know the answer to that." And direct the questioner to email riad.sodmg@gmail.com. Don't try to make up an answer. Always speak as if you were chatting to a friend.
         context: {context}
         question: {question}
@@ -64,13 +39,6 @@ export default async function aiResponse(
       const standaloneQuestionChain = standaloneQuestionPrompt
         .pipe(llm as any)
         .pipe(new StringOutputParser());
-
-      const answerChain = answerPrompt
-        .pipe(llm as any)
-        .pipe(new StringOutputParser());
-
-      const retriever = vectorStore.asRetriever();
-
       const retrieverChain = RunnableSequence.from([
         (prevResult) => {
           console.log(
@@ -83,6 +51,9 @@ export default async function aiResponse(
         retriever as any,
         combineDocuments,
       ]);
+      const answerChain = answerPrompt
+        .pipe(llm as any)
+        .pipe(new StringOutputParser());
 
       const chain = RunnableSequence.from([
         {
@@ -104,9 +75,4 @@ export default async function aiResponse(
   } catch (error: any) {
     return { success: false, error: { message: error.message } };
   }
-}
-
-function combineDocuments(docs: Docs["Document"]) {
-  console.log("Relevant docs:", docs);
-  return docs.map((doc) => doc.pageContent).join("\n\n");
 }
