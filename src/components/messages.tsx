@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, User } from "lucide-react";
+import { Bot, SendHorizontal, User } from "lucide-react";
 import aiResponse from "@/lib/ai-response";
 import { toast } from "@/hooks/use-toast";
 
@@ -51,7 +51,7 @@ export default function Messages() {
     }
   };
   return (
-    <Card className="backdrop-blur-m shadow-xl h-[600px] flex flex-col animate-fadeIn">
+    <Card className="backdrop-blur-m shadow-none h-[600px] flex flex-col animate-fadeIn">
       <ScrollArea className="flex-1 p-6">
         <div className="space-y-6">
           {messages.map((message, i) => (
@@ -99,8 +99,8 @@ export default function Messages() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask a question about your documents..."
           />
-          <Button type="submit" disabled={isLoading}>
-            Send
+          <Button type="submit" variant="outline" disabled={isLoading}>
+            <SendHorizontal className="h-4 w-4" />
           </Button>
         </div>
       </form>
