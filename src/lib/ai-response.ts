@@ -10,6 +10,9 @@ import {
 } from "@langchain/core/runnables";
 import Retriever from "./retriver";
 import combineDocuments from "./combine-documents";
+import formatConversationHistory from "./format-conversation-history";
+
+const conversationHistory: string[] = [];
 
 export default async function aiResponse(
   question: string
@@ -21,11 +24,18 @@ export default async function aiResponse(
     if (!openAiKey) {
       throw new Error("Missing openAiKey");
     } else {
-      const llm = new ChatOpenAI({ apiKey: openAiKey });
+      const llm = new ChatOpenAI({ apiKey: openAiKey, temperature: 0.75 });
 
-      const standaloneQuestionTemplate =
-        "Given a question, convert it to a standalone question. question: {question} standalone question:";
-      const answerTemplate = `You are a helpful and enthusiastic support bot who can answer a given question based on the context provided. Try to find the answer in the context. If you really don't know the answer, say "I'm sorry, I don't know the answer to that." And direct the questioner to email riad.sodmg@gmail.com. Don't try to make up an answer. Always speak as if you were chatting to a friend.
+      const standaloneQuestionTemplate = `Given some conversation history (if any) and a question, convert the question to a standalone question. 
+        conversation history: {conversation_history}
+        question: {question} 
+        standalone question:`;
+      const answerTemplate = `You are a helpful and enthusiastic support bot who can answer a given question based on the context provided and the conversation history.
+        Try to find the answer in the context. If the answer is not given in the context, find the answer in the conversation history if possible.
+        If you really don't know the answer, say "I'm sorry, I don't know the answer to that." And direct the questioner to email riad.sodmg@gmail.com. 
+        Don't try to make up an answer or say that it has not been provided in the context. 
+        Always speak as if you were chatting to a friend.
+        conversation history: {conversation_history}
         context: {context}
         question: {question}
         answer:
@@ -63,12 +73,24 @@ export default async function aiResponse(
         {
           context: retrieverChain,
           question: ({ original_input }) => original_input.question,
+          conversation_history: ({ original_input }) =>
+            original_input.conversation_history,
         },
+        // (prevResult) => {
+        //   console.log("Context:", prevResult);
+        //   return prevResult;
+        // },
         answerChain,
       ]);
 
-      const response = await chain.invoke({ question });
-      console.log("Response:", response);
+      const response = await chain.invoke({
+        question,
+        conversation_history: formatConversationHistory(conversationHistory),
+      });
+
+      conversationHistory.push(question);
+      conversationHistory.push(response);
+      // console.log(conversationHistory);
 
       return { success: true, data: response };
     }
