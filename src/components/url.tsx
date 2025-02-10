@@ -1,69 +1,76 @@
 "use client";
-import { scrapeWebContent } from "@/actions/scarepe-web";
-import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
-import FormStatusButton from "./form-status-button";
-import { Globe } from "lucide-react";
+import { webContentAction } from "@/actions/web";
+import { useActionState } from "react";
+import { CheckCircle2, Globe, Loader2, Settings } from "lucide-react";
 import { Input } from "./ui/input";
-import { generateEmbeddings } from "@/actions/generate-embeddings";
+import { Button } from "./ui/button";
+import { Alert, AlertDescription } from "./ui/alert";
 
+const initialState: ActionResponse = {
+  success: false,
+  message: "",
+};
 export default function Url() {
-  const [isUploading, setIsUploading] = useState(false);
-  const { toast } = useToast();
-
-  const handleFileUpload = async (formData: FormData) => {
-    setIsUploading(true);
-    const url = formData.get("url") as string;
-    if (!url) {
-      setIsUploading(false);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "URL is required",
-      });
-      return;
-    }
-    try {
-      const res = await scrapeWebContent(url);
-      if (res.error) {
-        setIsUploading(false);
-        throw new Error(res.error.message);
-      }
-      const emmbeddingsRes = await generateEmbeddings(res.data.content, {
-        url,
-        source: "website",
-      });
-      if (emmbeddingsRes?.error) {
-        setIsUploading(false);
-        throw new Error(emmbeddingsRes.error.message);
-      }
-      toast({
-        title: "Success",
-        description: `embeddings generated successfully for ${url}`,
-      });
-      setIsUploading(false);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "There was an error uploading your document" + error,
-      });
-      setIsUploading(false);
-    }
-  };
-
+  const [state, action, isPending] = useActionState(
+    webContentAction,
+    initialState
+  );
   return (
-    <form action={handleFileUpload} className="p-8 space-y-8 border rounded-xl">
+    <form
+      action={action}
+      className="p-8 space-y-8 border rounded-xl"
+      autoComplete="on"
+    >
       <div className="space-y-4">
         <div className="flex items-center gap-3 text-lg font-medium text-primary">
           <Globe className="h-5 w-5" />
           <h3>Add URL</h3>
         </div>
-        <Input type="text" name="url" placeholder="https://example.com" />
+        <Input
+          type="text"
+          name="url"
+          id="url"
+          defaultValue={state.input?.url}
+          placeholder="https://example.com"
+          minLength={5}
+          maxLength={100}
+          autoComplete="website-url"
+          aria-describedby="website-url-error"
+          className={state?.errors?.url ? "border-red-500" : ""}
+        />
+        {state?.errors?.url && (
+          <p id="country-error" className="text-sm text-red-500">
+            {state.errors.url[0]}
+          </p>
+        )}
+        {state?.message && (
+          <Alert variant={state.success ? "default" : "destructive"}>
+            <AlertDescription className="flex items-center gap-2">
+              {state.success && <CheckCircle2 className="h-4 w-4" />}{" "}
+              {state.message.includes("No article content found") ? (
+                <div dangerouslySetInnerHTML={{ __html: state.message }} />
+              ) : state.message.includes("Missing OpenAI") ||
+                state.message.includes("Missing Database") ? (
+                <div>
+                  {state.message} <br />
+                  to add yours click on the gear icon{" "}
+                  <Settings className="h-4 w-4 inline" /> in the top right
+                  corner.
+                </div>
+              ) : (
+                state.message
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
-      <FormStatusButton className="w-full" disabled={isUploading}>
-        {isUploading ? "Processing..." : "Upload and Process"}
-      </FormStatusButton>
+      <Button type="submit" disabled={isPending} className="w-full">
+        {isPending ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : (
+          "Scrape and Process URL"
+        )}
+      </Button>
     </form>
   );
 }

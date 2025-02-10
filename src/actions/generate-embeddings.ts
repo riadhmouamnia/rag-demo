@@ -8,19 +8,28 @@ import { getCookie } from "@/lib/cookies";
 export async function generateEmbeddings(
   text: string,
   info?: { [key: string]: string }
-) {
-  const openAiKey = await getCookie("openAiKey");
-  const dbConnectionString = await getCookie("dbConnectionString");
-  const tableName = await getCookie("tableName");
-
-  if (!openAiKey || !dbConnectionString || !tableName) {
-    return { error: { message: "Missing openAiKey or dbConnectionString" } };
-  }
-
-  const embeddings = new OpenAIEmbeddings({
-    apiKey: openAiKey,
-  });
+): Promise<ActionResponse> {
   try {
+    const openAiKey = await getCookie("openAiKey");
+    const dbConnectionString = await getCookie("dbConnectionString");
+    const tableName = await getCookie("tableName");
+
+    if (!openAiKey) {
+      return {
+        success: false,
+        message: "Missing OpenAI API Key",
+      };
+    }
+    if (!dbConnectionString) {
+      return {
+        success: false,
+        message: "Missing Database Connection String",
+      };
+    }
+
+    const embeddings = new OpenAIEmbeddings({
+      apiKey: openAiKey,
+    });
     const splitter = new RecursiveCharacterTextSplitter({
       chunkSize: 500,
       chunkOverlap: 50,
@@ -29,15 +38,22 @@ export async function generateEmbeddings(
 
     const vectorStore = await NeonPostgres.initialize(embeddings, {
       connectionString: dbConnectionString,
-      tableName: tableName.toLowerCase().replace(/\s/g, "_"),
+      tableName: tableName?.toLowerCase().replace(/\s/g, "_") || "embeddings",
     });
 
     const idsInserted = await vectorStore.addDocuments(splittedDocs);
-    if (idsInserted.length) {
-      return { success: true };
+    if (!idsInserted.length) {
+      return {
+        success: false,
+        message: "Failed to generate embeddings",
+      };
     }
-  } catch (error: Error | any) {
+    return {
+      success: true,
+      message: "Embeddings generated and stored to the database successfully",
+    };
+  } catch (error) {
     console.error(error);
-    return { success: false, error: { message: error.message } };
+    return { success: false, message: "Failed to generate embeddings" };
   }
 }

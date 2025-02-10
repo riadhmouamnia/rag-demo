@@ -11,3 +11,16 @@ type Docs = {
     id?: string;
   }[];
 };
+
+interface WebUrlFormData {
+  url: string;
+}
+
+interface ActionResponse {
+  success: boolean;
+  message: string;
+  errors?: {
+    [K in keyof AddressFormData]?: string[];
+  };
+  input?: AddressFormData;
+}
