@@ -23,7 +23,9 @@ export default async function RootLayout({
     <div className="p-8">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-bold">Chat with Documents</h1>
+          <h1 className="xl:text-4xl text-2xl font-bold">
+            Chat with Documents
+          </h1>
           <div className="flex gap-4">
             <SettingsDialog initialSettings={initialSettings} />
             <Button asChild className="hover:scale-105 transition-transform">

@@ -1,11 +1,11 @@
 import { Button } from "./ui/button";
 import { MessageSquare } from "lucide-react";
 import Link from "next/link";
-import Url from "./url";
-import PDF from "./pdf";
-import YtVideo from "./yt-video";
 import { SettingsDialog } from "./setting-dialog";
 import { getCookie } from "@/lib/cookies";
+import WebForm from "./web-form";
+import PDFForm from "./pdf-form";
+import YtVideoForm from "./yt-video-form";
 
 export default async function UploadDocs() {
   const openAiKey = await getCookie("openAiKey");
@@ -15,7 +15,7 @@ export default async function UploadDocs() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-4xl font-bold">Document Upload</h1>
+        <h1 className="xl:text-4xl text-2xl font-bold">Document Upload</h1>
         <div className="flex gap-4">
           <SettingsDialog initialSettings={initialSettings} />
           <Button asChild className="hover:scale-105 transition-transform">
@@ -26,9 +26,9 @@ export default async function UploadDocs() {
           </Button>
         </div>
       </div>
-      <Url />
-      <PDF />
-      <YtVideo />
+      <WebForm />
+      <PDFForm />
+      <YtVideoForm />
     </div>
   );
 }

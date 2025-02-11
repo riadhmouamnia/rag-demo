@@ -1,16 +1,16 @@
-type FileType = {
+interface FileType {
   name: string;
   textContent: string;
-};
+}
 
-type Docs = {
+interface Docs {
   Document: {
     pageContent: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     metadata: any;
     id?: string;
   }[];
-};
+}
 
 interface WebUrlFormData {
   url: string;
@@ -23,4 +23,10 @@ interface ActionResponse {
     [K in keyof AddressFormData]?: string[];
   };
   input?: AddressFormData;
+}
+
+interface IntegrationFormData {
+  openAiKey: string;
+  dbConnectionString: string;
+  tableName?: string;
 }

@@ -37,7 +37,6 @@ export default function Messages() {
         });
         return;
       } else {
-        console.log(res.data);
         const assistantMessage = {
           role: "assistant" as const,
           content: res.data!,
@@ -81,10 +80,10 @@ export default function Messages() {
           ))}
           {isLoading && (
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-full bg-gray-200">
-                <Bot className="h-4 w-4 text-gray-700" />
+              <div className="p-2 rounded-full bg-gradient-to-r from-purple-600 to-blue-600">
+                <Bot className="h-4 w-4 text-white" />
               </div>
-              <div className="bg-white/60 max-w-[80%] p-4 rounded-2xl">
+              <div className="pg-primary-foreground max-w-[80%] p-4 rounded-2xl">
                 Thinking...
               </div>
             </div>
