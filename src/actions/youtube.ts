@@ -3,10 +3,14 @@ import { YoutubeTranscript } from "youtube-transcript";
 import { z } from "zod";
 import { generateEmbeddings } from "./generate-embeddings";
 const youtubeUrlSchema = z.object({
-  url: z.string().url().min(1, "URL is required").includes("watch?v=", {
-    message:
-      "Invalid URL format for YouTube video, the URL must include 'watch?v='.",
-  }),
+  url: z
+    .string()
+    .nonempty({ message: "URL is required" })
+    .url()
+    .includes("watch?v=", {
+      message:
+        "Invalid URL format for YouTube video, the URL must include 'watch?v='.",
+    }),
 });
 
 export async function youtubeAction(

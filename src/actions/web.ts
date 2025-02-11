@@ -7,7 +7,7 @@ import axios from "axios";
 import { generateEmbeddings } from "./generate-embeddings";
 
 const webUrlSchema = z.object({
-  url: z.string().url().min(1, "URL is required"),
+  url: z.string().nonempty({ message: "URL is required" }).url(),
 });
 
 export async function webContentAction(
